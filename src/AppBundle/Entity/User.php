@@ -1,0 +1,357 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: cold
+ * Date: 8/7/15
+ * Time: 7:05 AM
+ */
+namespace AppBundle\Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
+
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
+/**
+ * @ORM\Table(name="app_users")
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\UserRepository")
+ * @UniqueEntity("username", message="user.username.unique")
+ * @UniqueEntity("email", message="user.email.unique")
+ */
+class User implements UserInterface, \Serializable
+{
+    const ROLE_DEFAULT = 'ROLE_USER';
+    const ROLE_ADMIN = 'ROLE_ADMIN';
+
+    /**
+     * @ORM\Column(type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    private $id;
+
+    /**
+     * @ORM\Column(type="string", length=25, unique=true)
+     * @Assert\NotBlank(message="user.username.not_blank")
+     * @Assert\Regex("/^[a-zA-Z0-9][a-zA-Z0-9_\.\-]+[a-zA-Z0-9]$/", message="user.username.regex")
+     * @Assert\Length(min="3", max="24", minMessage="user.username.min_length", maxMessage="user.username.max_length")
+     * @Groups({"registration"})
+     */
+    private $username;
+
+    /**
+     * @ORM\Column(name="username_canonical", type="string", length=25, unique=true)
+     */
+    private $usernameCanonical;
+
+    /**
+     * @ORM\Column(type="string", length=64)
+     */
+    private $password;
+
+    /**
+     * @ORM\Column(type="string", length=60, unique=true)
+     * @Assert\NotBlank(message="user.email.not_blank")
+     * @Assert\Email(message="user.email.email")
+     * @Groups({"registration"})
+     */
+    private $email;
+
+    /**
+     * @ORM\Column(name="email_canonical", type="string", length=60, unique=true)
+     */
+    private $emailCanonical;
+
+    /**
+     * @ORM\Column(name="is_active", type="boolean")
+     */
+    private $isActive;
+
+    /**
+     * @ORM\Column(type="string")
+     * @var string
+     */
+    private $salt;
+
+    /**
+     * @var string
+     * @Assert\Length(min="6", max="32",
+     *  minMessage="user.plain_password.min_length",
+     *  maxMessage="user.plain_password.max_length"
+     * )
+     * @Groups({"registration"})
+     */
+    private $plainPassword;
+
+    /**
+     * @ORM\Column(name="roles", type="array")
+     * @var array
+     */
+    private $roles = [];
+
+    /**
+     * @ORM\Column(name="first_name", type="string", length=32)
+     * @Assert\Length(max="32", maxMessage="user.first_name.max_length")
+     * @Assert\NotBlank(message="user.first_name.not_blank")
+     * @Groups({"registration"})
+     * @var string
+     */
+    private $firstName;
+
+    /**
+     * @ORM\Column(name="last_name", type="string", length=32)
+     * @Assert\Length(max="32", maxMessage="user.last_name.max_length")
+     * @Assert\NotBlank(message="user.last_name.not_blank")
+     * @Groups({"registration"})
+     * @var string
+     */
+    private $lastName;
+
+    public function __construct()
+    {
+        $this->isActive = true;
+        $this->salt = md5(uniqid(null, true));
+    }
+
+    public function __toString()
+    {
+        return (string)$this->getUsername();
+    }
+
+    public function getSalt()
+    {
+        return $this->salt;
+    }
+
+    public function getRoles()
+    {
+        $roles = $this->roles;
+        $roles[] = static::ROLE_DEFAULT;
+        return $roles;
+    }
+
+    public function eraseCredentials()
+    {
+        $this->plainPassword = null;
+        return $this;
+    }
+
+    public function getUsername()
+    {
+        return $this->username;
+    }
+
+    public function getPassword()
+    {
+        return $this->password;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIsActive()
+    {
+        return $this->isActive;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEmail()
+    {
+        return $this->email;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPlainPassword()
+    {
+        return $this->plainPassword;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUsernameCanonical()
+    {
+        return $this->usernameCanonical;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEmailCanonical()
+    {
+        return $this->emailCanonical;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFirstName()
+    {
+        return $this->firstName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLastName()
+    {
+        return $this->lastName;
+    }
+
+    /**
+     * @param string $firstName
+     */
+    public function setFirstName($firstName)
+    {
+        $this->firstName = $firstName;
+    }
+
+    /**
+     * @param string $lastName
+     */
+    public function setLastName($lastName)
+    {
+        $this->lastName = $lastName;
+    }
+
+
+
+    /**
+     * @param mixed $usernameCanonical
+     * @return $this
+     */
+    public function setUsernameCanonical($usernameCanonical)
+    {
+        $this->usernameCanonical = $usernameCanonical;
+        return $this;
+    }
+
+    /**
+     * @param mixed $emailCanonical
+     * @return $this
+     */
+    public function setEmailCanonical($emailCanonical)
+    {
+        $this->emailCanonical = $emailCanonical;
+        return $this;
+    }
+
+
+    /**
+     * @param string $salt
+     */
+    public function setSalt($salt)
+    {
+        $this->salt = $salt;
+    }
+
+
+    /**
+     * @param mixed $plainPassword
+     * @return $this
+     */
+    public function setPlainPassword($plainPassword)
+    {
+        $this->plainPassword = $plainPassword;
+        return $this;
+    }
+
+
+    /**
+     * @param mixed $username
+     * @return $this
+     */
+    public function setUsername($username)
+    {
+        $this->username = $username;
+        return $this;
+    }
+
+    /**
+     * @param mixed $password
+     * @return $this
+     */
+    public function setPassword($password)
+    {
+        $this->password = $password;
+        return $this;
+    }
+
+    /**
+     * @param mixed $id
+     * @return $this
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function addRole($role)
+    {
+        $role = strtoupper($role);
+        if ($role === static::ROLE_DEFAULT) {
+            return $this;
+        }
+        if (!in_array($role, $this->roles, true)) {
+            $this->roles[] = $role;
+        }
+        return $this;
+    }
+
+    /**
+     * @param mixed $email
+     * @return $this
+     */
+    public function setEmail($email)
+    {
+        $this->email = $email;
+        return $this;
+    }
+
+    /**
+     * @param mixed $isActive
+     * @return $this
+     */
+    public function setIsActive($isActive)
+    {
+        $this->isActive = $isActive;
+        return $this;
+    }
+
+    public function serialize()
+    {
+        return serialize(array(
+            $this->id,
+            $this->username,
+            $this->password,
+            $this->roles,
+            $this->salt,
+        ));
+    }
+
+    public function unserialize($serialized)
+    {
+        list (
+            $this->id,
+            $this->username,
+            $this->password,
+            $this->roles,
+            $this->salt
+            ) = unserialize($serialized);
+    }
+}

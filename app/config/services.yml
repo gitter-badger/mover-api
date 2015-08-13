@@ -1,0 +1,16 @@
+#parameters:
+
+services:
+    app.user_manager:
+        class: AppBundle\Manager\UserManager
+        arguments:
+            - @security.encoder_factory
+            - @doctrine.orm.entity_manager
+            - @app.user_repository
+            - AppBundle\Entity\User
+    app.user_repository:
+        class: Doctrine\ORM\EntityRepository
+        factory_service: doctrine.orm.default_entity_manager
+        factory_method: getRepository
+        arguments:
+            - AppBundle:User

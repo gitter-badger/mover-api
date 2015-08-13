@@ -1,0 +1,37 @@
+security:
+    encoders:
+        AppBundle\Entity\User:
+            algorithm: bcrypt
+
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_USER
+
+    providers:
+        cold_auth:
+            entity:
+                class: AppBundle:User
+                property: username
+
+    firewalls:
+        dev:
+            pattern:  ^/(_(profiler|wdt|doc))/
+            security: false
+        login:
+            pattern:  ^/login
+            stateless: true
+            anonymous: true
+            form_login:
+                check_path:               /login_check
+                success_handler:          lexik_jwt_authentication.handler.authentication_success
+                failure_handler:          lexik_jwt_authentication.handler.authentication_failure
+                require_previous_session: false
+
+        api:
+            pattern:   ^/
+            stateless: true
+            anonymous: true
+            lexik_jwt: ~
+
+    access_control:
+        - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/,      roles: IS_AUTHENTICATED_ANONYMOUSLY }
