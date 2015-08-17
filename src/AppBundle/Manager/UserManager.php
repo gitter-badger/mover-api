@@ -12,13 +12,13 @@ namespace AppBundle\Manager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Component\Security\Core\Encoder\EncoderFactoryInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserManager
 {
     private $encoderFactory;
     private $em;
     private $repository;
-    private $className;
 
     /**
      * @param EncoderFactoryInterface $encoderFactory
@@ -35,8 +35,24 @@ class UserManager
         $this->repository = $repository;
     }
 
+    public function findByUsernameOrEmail($usernameOrEmail)
+    {
+        return $this->repository->findByUsernameOrEmail($usernameOrEmail);
+    }
+
     /**
-     * @return \AppBundle\Entity\User
+     * @param $plainPassword
+     * @param $user
+     * @return bool
+     */
+    public function isPasswordValid(UserInterface $user, $plainPassword)
+    {
+        $encoder = $this->encoderFactory->getEncoder($user);
+        return $encoder->isPasswordValid($user->getPassword(), $plainPassword, $user->getSalt());
+    }
+
+    /**
+     * @return \AppBundle\Entity\User|UserInterface
      */
     public function createUser()
     {
@@ -45,9 +61,9 @@ class UserManager
     }
 
     /**
-     * @param $user \AppBundle\Entity\User
+     * @param \AppBundle\Entity\User|UserInterface $user
      * @param bool $andFlush
-     * @return $this
+     * @return self
      */
     public function updateUser($user, $andFlush = true)
     {
@@ -61,11 +77,11 @@ class UserManager
     }
 
     /**
-     * @param $user \AppBundle\Entity\User
+     * @param \AppBundle\Entity\User|UserInterface $user
      * @param bool $andFlush
-     * @return $this
+     * @return self
      */
-    public function deleteUser($user, $andFlush = true)
+    public function deleteUser(UserInterface $user, $andFlush = true)
     {
 
         $this->em->remove($user);
@@ -77,10 +93,10 @@ class UserManager
     }
 
     /**
-     * @param $user \AppBundle\Entity\User
-     * @return $this
+     * @param \AppBundle\Entity\User|UserInterface $user
+     * @return self
      */
-    public function updatePassword($user)
+    public function updatePassword(UserInterface $user)
     {
         $plainPassword = $user->getPlainPassword();
 
@@ -93,10 +109,10 @@ class UserManager
     }
 
     /**
-     * @param $user \AppBundle\Entity\User
-     * @return $this
+     * @param \AppBundle\Entity\User|UserInterface $user \AppBundle\Entity\User
+     * @return self
      */
-    public function updateCanonicalFields($user)
+    public function updateCanonicalFields(UserInterface $user)
     {
         $user->setEmailCanonical(strtolower($user->getEmail()));
         $user->setUsernameCanonical(strtolower($user->getUsername()));

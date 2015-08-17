@@ -12,5 +12,6 @@ services:
         class: Doctrine\ORM\EntityRepository
         factory_service: doctrine.orm.default_entity_manager
         factory_method: getRepository
+        private: true
         arguments:
             - AppBundle:User

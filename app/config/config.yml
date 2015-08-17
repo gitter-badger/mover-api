@@ -19,7 +19,7 @@ framework:
     default_locale:  "%locale%"
     trusted_hosts:   ~
     trusted_proxies: ~
-    session:    ~
+    session:    false
     fragments:       false
     http_method_override: true
 
@@ -106,3 +106,28 @@ nelmio_cors:
 #        origin_regex: false
     paths:
         '^/': ~
+
+
+
+oneup_flysystem:
+    adapters:
+        cold_adapter:
+            local:
+                directory: %kernel.root_dir%/../web/uploads
+
+    filesystems:
+        cold_fs:
+            adapter:    cold_adapter
+            mount:      cold
+            alias:      cold_fs
+
+vich_uploader:
+    db_driver: orm
+    storage:   flysystem
+    mappings:
+        user_videos:
+            uri_prefix:         /user_videos
+            upload_destination: cold
+            inject_on_load:     true
+            delete_on_update:   true
+            delete_on_remove:   true

@@ -23,7 +23,10 @@
         "doctrine/doctrine-migrations-bundle": "^1.0",
         "lexik/jwt-authentication-bundle": "^1.1",
         "friendsofsymfony/rest-bundle": "^1.7",
-        "nelmio/cors-bundle": "^1.4"
+        "nelmio/cors-bundle": "^1.4",
+        "oneup/flysystem-bundle": "^1.1",
+        "vich/uploader-bundle": "@dev",
+        "doctrine/doctrine-fixtures-bundle": "^2.2"
     },
     "require-dev": {
         "sensio/generator-bundle": "~2.3"
